@@ -39,12 +39,21 @@ class Conn:
     label: str          # "Benign" / "Malicious" / "" (unknown)
 
 
-def parse_conn_log(path: str | Path) -> list[Conn]:
-    """Stream a Zeek conn.log[.labeled] into Conn records, sorted by time."""
+def parse_conn_log(path: str | Path, max_lines: int | None = None,
+                   stride: int = 1) -> list[Conn]:
+    """Stream a Zeek conn.log[.labeled] into Conn records, sorted by time.
+
+    max_lines caps how many data rows are kept — a memory safety valve.
+    stride keeps only every Nth data row, so a capped read SAMPLES ACROSS the
+    whole capture (preserving its full time span) instead of taking just the
+    front — important for huge captures where the front is time-compressed.
+    """
     path = Path(path)
     fields: list[str] | None = None
     idx: dict[str, int] = {}
     rows: list[Conn] = []
+    n_seen = 0      # data rows encountered
+    n_kept = 0      # data rows kept
 
     with open(path, "r", errors="replace") as f:
         for line in f:
@@ -56,6 +65,13 @@ def parse_conn_log(path: str | Path) -> list[Conn]:
                 continue
             if fields is None:
                 continue
+            if max_lines is not None and n_kept >= max_lines:
+                break
+            if stride > 1 and (n_seen % stride) != 0:
+                n_seen += 1
+                continue
+            n_seen += 1
+            n_kept += 1
             p = line.rstrip("\n").split("\t")
             if len(p) < len(fields):
                 continue
@@ -63,13 +79,12 @@ def parse_conn_log(path: str | Path) -> list[Conn]:
             def g(name, default="-"):
                 return p[idx[name]] if name in idx and idx[name] < len(p) else default
 
-            # IoT-23 label lives in the trailing columns; Zeek base logs have none.
-            label = ""
-            if "label" in idx:
-                label = g("label")
-            elif len(p) > len(fields):       # labels appended past #fields
-                label = p[-2] if len(p) >= 2 else ""
-            label = "Malicious" if "alicious" in label else ("Benign" if "enign" in label else "")
+            # IoT-23 stores the label in trailing column(s) whose exact tab/space
+            # layout varies between dataset versions (separate `label` column in
+            # some, space-packed `tunnel_parents label detailed-label` in others).
+            # The tokens "Malicious"/"Benign" only appear in the label, so scan
+            # the row robustly instead of relying on a fixed column index.
+            label = "Malicious" if "Malicious" in line else ("Benign" if "Benign" in line else "")
 
             rows.append(Conn(
                 ts=_f(g("ts")),
@@ -91,9 +106,23 @@ def parse_conn_log(path: str | Path) -> list[Conn]:
     return rows
 
 
-def group_by_device(conns: list[Conn]) -> dict[str, list[Conn]]:
-    """Group connections by source device (originating host)."""
+def is_local_ip(ip: str) -> bool:
+    """RFC1918 private address — i.e., a device on the monitored network.
+
+    External IPs appearing as sources are response traffic, not devices we
+    monitor, so the engine scores only local devices (matches deployment)."""
+    return (ip.startswith("192.168.")
+            or ip.startswith("10.")
+            or any(ip.startswith(f"172.{o}.") for o in range(16, 32)))
+
+
+def group_by_device(conns: list[Conn], local_only: bool = True) -> dict[str, list[Conn]]:
+    """Group connections by source device (originating host).
+
+    local_only restricts to RFC1918 source IPs (the devices on the network)."""
     out: dict[str, list[Conn]] = {}
     for c in conns:
+        if local_only and not is_local_ip(c.src):
+            continue
         out.setdefault(c.src, []).append(c)
     return out

@@ -26,11 +26,11 @@ from vigilo.model_config import ModelConfigPdM
 from vigilo.forecaster import PdMForecaster
 
 
-def device_window_list(log_paths, window_s, min_windows):
+def device_window_list(log_paths, window_s, min_windows, max_flows=None):
     """Raw (unnormalized) per-device window matrices from benign logs."""
     devs = []
     for lp in log_paths:
-        conns = parse_conn_log(lp)
+        conns = parse_conn_log(lp, max_lines=max_flows)
         for src, dconns in group_by_device(conns).items():
             w = device_windows(dconns, window_s=window_s)
             if w.shape[0] >= min_windows:
@@ -69,6 +69,8 @@ def main():
     ap.add_argument("--window-s", type=float, default=300.0)
     ap.add_argument("--baseline", type=int, default=10)
     ap.add_argument("--min-windows", type=int, default=12)
+    ap.add_argument("--max-flows", type=int, default=2_000_000,
+                    help="cap flows read per capture (memory safety on huge logs)")
     ap.add_argument("--normalize", choices=["global", "asset"], default="global",
                     help="global = cross-device cold-start; asset = per-device baseline")
     ap.add_argument("--device", default=None)
@@ -78,7 +80,7 @@ def main():
         "cuda" if torch.cuda.is_available() else "cpu")
     out = Path(args.output_dir); out.mkdir(parents=True, exist_ok=True)
 
-    devs = device_window_list(args.logs, args.window_s, args.min_windows)
+    devs = device_window_list(args.logs, args.window_s, args.min_windows, args.max_flows)
     if not devs:
         raise SystemExit("No usable benign devices — check logs / thresholds.")
 
