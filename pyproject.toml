@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vigilo"
+version = "0.1.0"
+description = "On-device network anomaly detection — learns normal behavior, flags deviations."
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0",
+    "numpy>=1.24",
+    "flask>=3.0",
+    "jinja2>=3.1",
+    "gunicorn>=22.0;sys_platform!='win32'",
+    "waitress>=3.0;sys_platform=='win32'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4",
+]
+gpu = [
+    "mamba-ssm",
+    "causal-conv1d",
+]
+
+[project.scripts]
+vigilo = "vigilo.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["vigilo*", "arch*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,5 +1,5 @@
 """
-Train NetSentinel on BENIGN traffic only.
+Train Vigilo on BENIGN traffic only.
 
 Learns to forecast each device's next behavioral window from its recent history.
 Trained purely on normal traffic; malicious behavior is detected at runtime as
@@ -93,13 +93,13 @@ def main():
     seqs = slice_seqs(normed, args.seq_len)
     if not seqs:
         raise SystemExit("No usable training sequences.")
-    print(f"[NS] {len(devs)} benign devices → {len(seqs)} sequences "
+    print(f"[vigilo] {len(devs)} benign devices → {len(seqs)} sequences "
           f"({N_FEATURES} features, {args.window_s:.0f}s windows, norm={args.normalize})",
           flush=True)
 
     cfg = ModelConfigPdM(max_seq_len=args.seq_len + 1)
     model = PdMForecaster(cfg, n_features=N_FEATURES).to(device)
-    print(f"[NS] forecaster params: {model.num_parameters():,}", flush=True)
+    print(f"[vigilo] forecaster params: {model.num_parameters():,}", flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
 
     rng = np.random.default_rng(0)
@@ -127,7 +127,7 @@ def main():
                out / "vigilo.pt")
     (out / "meta.json").write_text(json.dumps({"n_features": N_FEATURES,
                                                "window_s": args.window_s}))
-    print(f"[NS] saved {out/'vigilo.pt'}", flush=True)
+    print(f"[vigilo] saved {out/'vigilo.pt'}", flush=True)
 
 
 if __name__ == "__main__":

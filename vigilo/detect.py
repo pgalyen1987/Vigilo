@@ -91,8 +91,8 @@ def main():
     ref = benign if len(benign) else peaks
     tau = float(np.quantile(ref, 1.0 - args.target_fpr)) if len(ref) else 0.0
 
-    print(f"[NS] {len(rows)} devices scored  (window={window_s:.0f}s)", flush=True)
-    print(f"[NS] threshold τ={tau:.3f} @ target FPR {args.target_fpr:.0%}\n", flush=True)
+    print(f"[vigilo] {len(rows)} devices scored  (window={window_s:.0f}s)", flush=True)
+    print(f"[vigilo] threshold τ={tau:.3f} @ target FPR {args.target_fpr:.0%}\n", flush=True)
     print(f"{'device':<18}{'score':>10}  {'flag':>6}  label", flush=True)
     for src, peak, mal, ncm, ncn in sorted(rows, key=lambda r: -r[1]):
         flag = "ALERT" if peak > tau else ""

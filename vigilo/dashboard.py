@@ -7,16 +7,21 @@ device table with human-readable reasons. Fully local; nothing leaves the host.
 Usage:
     VIGILO_LOG=data/iot23/malware-49-1.labeled python -m vigilo.dashboard
     # then open http://127.0.0.1:8088
+
+Production:
+    gunicorn vigilo.dashboard:app -b 0.0.0.0:8088
 """
 from __future__ import annotations
 
 import os
+import time
 
-from flask import Flask, render_template_string
+from flask import Flask, jsonify, render_template_string
 
 from vigilo.ensemble import analyze
 
 app = Flask(__name__)
+_START_TIME = time.monotonic()
 
 TEMPLATE = """
 <!doctype html><html><head><meta charset="utf-8"><title>Vigilo</title>
@@ -70,9 +75,39 @@ def index():
                                   n_alert=n_alert, log=os.path.basename(log))
 
 
+@app.route("/healthz")
+def healthz():
+    """Liveness probe for container orchestrators and load balancers."""
+    log = os.environ.get("VIGILO_LOG", "")
+    ckpt = os.environ.get("VIGILO_CKPT", "checkpoints/vigilo/vigilo.pt")
+    return jsonify({
+        "status": "ok",
+        "uptime_s": round(time.monotonic() - _START_TIME, 1),
+        "log_configured": bool(log),
+        "ckpt": ckpt,
+    })
+
+
+@app.route("/api/results")
+def api_results():
+    """JSON API returning the same data the dashboard renders."""
+    log = os.environ.get("VIGILO_LOG", "data/iot23/malware-49-1.labeled")
+    ckpt = os.environ.get("VIGILO_CKPT", "checkpoints/vigilo/vigilo.pt")
+    results = analyze(log, ckpt)
+    n_alert = sum(r["verdict"] == "ALERT" for r in results)
+    return jsonify({"devices": len(results), "alerts": n_alert, "results": results})
+
+
 def main():
-    app.run(host=os.environ.get("VIGILO_HOST", "127.0.0.1"),
-            port=int(os.environ.get("VIGILO_PORT", "8088")))
+    host = os.environ.get("VIGILO_HOST", "127.0.0.1")
+    port = int(os.environ.get("VIGILO_PORT", "8088"))
+
+    if os.name == "nt":
+        from waitress import serve as waitress_serve
+        print(f"[vigilo] dashboard on http://{host}:{port}  (waitress)", flush=True)
+        waitress_serve(app, host=host, port=port)
+    else:
+        app.run(host=host, port=port)
 
 
 if __name__ == "__main__":

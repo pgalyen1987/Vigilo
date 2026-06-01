@@ -1,6 +1,30 @@
+# Model artifacts
 checkpoints/
 *.pt
+
+# Training data (large)
 data/iot23/*.labeled
+data/cic/
+data/**/*.pcap
+data/home/*_zeek.conn.log
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
 .venv/
+
+# Release artifacts (keep templates, ignore built images)
+release/*.tar.gz
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

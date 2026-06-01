@@ -1,0 +1,12 @@
+services:
+  vigilo:
+    image: vigilo:0.1.0
+    ports:
+      - "${VIGILO_PORT:-8088}:8088"
+    volumes:
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+      - ./reports:/app/reports
+    env_file:
+      - .env
+    restart: unless-stopped
