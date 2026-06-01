@@ -40,3 +40,22 @@ and need per-device baselining or flow-level inspection (roadmap).
 python -m vigilo.train     --logs data/iot23/benign-*.labeled --normalize global --window-s 300
 python -m vigilo.benchmark --benign "data/iot23/benign-*.labeled" --malware "data/iot23/malware-*.labeled"
 ```
+
+## Follow-up findings (data experiments)
+
+- **Run-to-run variance is real.** Same IoT-only setup gave 75% @1% FPR one run,
+  40% @1% / 75% @5% / 95% @10% another. Cause: ~1.3M-param model + threshold
+  calibrated on only ~14 benign devices = noisy threshold. Stable underneath:
+  loud attacks always caught, stealthy always missed.
+- **General-host (PC) benign traffic HURTS.** Adding CTU-Normal (PC/laptop
+  captures) to "normal" dropped detection 75% -> 20%: PCs are noisy/varied, so
+  the model learned scanning-like behavior as normal. Train "normal" on
+  IoT-like traffic only. (CTU-Normal removed.)
+- **Device-rich IoT datasets are inaccessible/incompatible:** N-BaIoT and
+  CICIoT2023-CSV are pre-aggregated classification features (no per-device flow
+  sequences); CICIoT2023 pcaps are huge + non-scriptable; UNSW is gated. Data
+  quantity is not the bottleneck — stealthy-attack sensitivity and threshold
+  calibration are.
+- **Implication:** per-asset baselining (per-device normal, learned in place) is
+  the path to "works with any device" and to a stable per-device threshold —
+  not more global training data.
