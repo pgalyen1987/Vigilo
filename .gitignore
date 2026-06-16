@@ -8,6 +8,17 @@ data/cic/
 data/**/*.pcap
 data/home/*_zeek.conn.log
 
+# Real home-network captures & derived data — NEVER publish (privacy/secrets)
+data/home/*.conn
+data/home/*.conn.log
+data/home/perdevice_*/
+data/home/live_*/
+data/home/train_*/
+data/home/zeek.*/
+data/home/*_cleartext.txt
+reports/home_*.html
+reports/monitor*.html
+
 # Python
 __pycache__/
 *.pyc

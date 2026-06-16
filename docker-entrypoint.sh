@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# When run with `--user $(id -u)`, the host UID has no /etc/passwd entry, so
+# getpass.getuser() (used by torch to pick a cache dir) raises KeyError. Provide
+# sane defaults so `train`/`detect` work as an arbitrary host user out of the box.
+export HOME="${HOME:-/tmp}"
+export USER="${USER:-vigilo}"
+export TORCHINDUCTOR_CACHE_DIR="${TORCHINDUCTOR_CACHE_DIR:-/tmp/torchinductor}"
+export TRITON_CACHE_DIR="${TRITON_CACHE_DIR:-/tmp/triton}"
+
 CMD="${1:-serve}"
 shift 2>/dev/null || true
 

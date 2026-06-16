@@ -23,8 +23,37 @@ import numpy as np
 from vigilo.zeek import parse_conn_log, is_local_ip
 
 
+def _is_external_unicast(ip: str) -> bool:
+    """True only for routable external unicast IPs.
+
+    C&C beacons go to an external host; benign periodic traffic (SSDP/UPnP,
+    mDNS, NTP, DNS-to-gateway) goes to multicast/broadcast/local — those are
+    regular by design and must NOT be flagged as beaconing.
+    """
+    if not ip or ":" in ip:                 # skip IPv6 / malformed for now
+        return False
+    if is_local_ip(ip):                     # RFC1918 (gateway, other LAN devices)
+        return False
+    try:
+        first = int(ip.split(".")[0])
+    except ValueError:
+        return False
+    if 224 <= first <= 239:                 # multicast (incl. 239.255.255.250 SSDP)
+        return False
+    if first in (0, 127, 255):              # this-net / loopback / broadcast
+        return False
+    if ip.endswith(".255") or ip == "255.255.255.255":   # broadcast
+        return False
+    if ip.startswith("169.254."):           # link-local
+        return False
+    return True
+
+
 def beacon_pairs(conns, min_hits=8, min_interval=0.5, max_interval=3600.0):
     """Return per (device, dst, port) beaconing records, strongest first.
+
+    Only external-unicast destinations are considered (multicast/broadcast/local
+    periodic traffic like SSDP/mDNS/NTP is benign and excluded).
 
     Each record: (src, dst, port, n, cv, mean_interval, score).
     score = regularity (1-CV, clipped) weighted by log(repetitions); high = beacon.
@@ -32,6 +61,8 @@ def beacon_pairs(conns, min_hits=8, min_interval=0.5, max_interval=3600.0):
     pairs: dict[tuple, list[float]] = defaultdict(list)
     for c in conns:
         if not is_local_ip(c.src):
+            continue
+        if not _is_external_unicast(c.dst):     # ignore multicast/broadcast/local dsts
             continue
         pairs[(c.src, c.dst, c.dst_port)].append(c.ts)
 

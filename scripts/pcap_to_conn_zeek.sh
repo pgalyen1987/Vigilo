@@ -12,6 +12,10 @@ mkdir -p "$odir"
 tmp="$(mktemp -d "$odir/zeek.XXXXXX")"
 docker run --rm -v "$pdir":/pcap:ro -v "$tmp":/out -w /out --entrypoint zeek \
   zeek/zeek -r "/pcap/$pbase" -C
+if [ ! -f "$tmp/conn.log" ]; then
+  echo "[zeek] WARNING: no conn.log produced — pcap had no TCP/UDP flows" >&2
+  rm -rf "$tmp"; exit 3
+fi
 mv "$tmp/conn.log" "$out"
 rm -rf "$tmp"
 echo "[zeek] wrote $out ($(grep -vc '^#' "$out") flows)"
