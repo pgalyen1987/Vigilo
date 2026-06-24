@@ -15,8 +15,8 @@
 
 set -euo pipefail
 
-VIGILO="/home/me/SAAS/Vigilo"
-[ -f "$VIGILO/.env" ] && { set -a; . "$VIGILO/.env"; set +a; }
+# shellcheck source=common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 IFACE="${CAPTURE_IFACE:-wlan0}"
 SUBNET="${CAPTURE_SUBNET:-192.168.1.0/24}"
 DURATION="${1:-3600}"
@@ -86,7 +86,7 @@ echo "[5/5] training forecaster on captured traffic..."
 docker run --rm --user "$U:$G" \
   -e USER=vigilo -e HOME=/tmp -e TORCHINDUCTOR_CACHE_DIR=/tmp/ti -e TRITON_CACHE_DIR=/tmp/triton \
   -v "$VIGILO/data:/app/data" -v "$VIGILO/checkpoints:/app/checkpoints" \
-  vigilo:latest train --logs "data/home/$(basename "$OUT")/capture.conn" \
+  "$VIGILO_IMAGE" train --logs "data/home/$(basename "$OUT")/capture.conn" \
   --output-dir checkpoints/vigilo
 
 echo "done. model -> checkpoints/vigilo/vigilo.pt   data -> $OUT"

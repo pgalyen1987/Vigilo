@@ -9,4 +9,27 @@ services:
       - ./reports:/app/reports
     env_file:
       - .env
+    environment:
+      - VIGILO_HOST=0.0.0.0
+      - VIGILO_PORT=8088
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8088/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  zeek:
+    image: zeek/zeek:latest
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./data/zeek:/logs
+    working_dir: /logs
+    command: ["-i", "${CAPTURE_IFACE:-eth1}"]
+    restart: unless-stopped
+    profiles:
+      - span

@@ -7,7 +7,7 @@ name = "vigilo"
 version = "0.1.0"
 description = "On-device network anomaly detection — learns normal behavior, flags deviations."
 readme = "README.md"
-license = {text = "Proprietary"}
+license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
 dependencies = [
     "torch>=2.0",

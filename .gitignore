@@ -1,6 +1,9 @@
-# Model artifacts
-checkpoints/
-*.pt
+# Model artifacts (allow bundled demo checkpoint)
+checkpoints/*
+!checkpoints/demo/
+checkpoints/demo/*
+!checkpoints/demo/vigilo.pt
+!checkpoints/demo/meta.json
 
 # Training data (large)
 data/iot23/*.labeled
@@ -16,6 +19,9 @@ data/home/live_*/
 data/home/train_*/
 data/home/zeek.*/
 data/home/*_cleartext.txt
+# Allow bundled demo data (synthetic, no real traffic)
+!data/demo/
+!data/demo/**
 reports/home_*.html
 reports/monitor*.html
 

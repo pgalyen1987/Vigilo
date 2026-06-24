@@ -1,4 +1,4 @@
-.PHONY: install dev build up down logs train detect report release clean lint test help
+.PHONY: install dev build up down logs train detect report release clean lint test demo span-up help
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -16,6 +16,15 @@ lint: ## Run ruff linter
 
 test: ## Run test suite
 	pytest tests/ -v
+
+demo: ## Generate bundled demo data + checkpoint
+	python scripts/generate_demo_data.py
+
+span-up: ## Start passive SPAN capture (Zeek + Vigilo)
+	docker compose --profile span up -d
+
+span-down: ## Stop SPAN profile services
+	docker compose --profile span down
 
 # ── Docker ──────────────────────────────────────────────────────────
 

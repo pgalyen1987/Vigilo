@@ -11,11 +11,10 @@
 
 set -eu
 
-# Config comes from .env (copy .env.example -> .env and fill in YOUR network).
+# shellcheck source=common.sh
+. "$(dirname "$0")/common.sh"
 # iOS rotates its MAC per reconnect, so one phone shows as several "iPhone" entries
 # in the router list — put every MAC you OWN in CAPTURE_PHONE_MACS. Each gets deauthed.
-VIGILO="/home/me/SAAS/Vigilo"
-[ -f "$VIGILO/.env" ] && { set -a; . "$VIGILO/.env"; set +a; }
 SSID="${WIFI_SSID:?set WIFI_SSID in .env (copy .env.example -> .env)}"
 WIFI_PASS="${WIFI_PASS:?set WIFI_PASS in .env}"
 CHANNEL="${WIFI_CHANNEL:-48}"

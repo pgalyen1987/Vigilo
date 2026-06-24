@@ -19,10 +19,8 @@
 
 set -euo pipefail
 
-# Config comes from .env (copy .env.example -> .env). No secret needed: MITM relays
-# plaintext L3, so there's no WPA key to decrypt with.
-VIGILO="/home/me/SAAS/Vigilo"
-[ -f "$VIGILO/.env" ] && { set -a; . "$VIGILO/.env"; set +a; }
+# shellcheck source=common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 IFACE="${CAPTURE_IFACE:-wlan0}"            # your LAN interface
 SUBNET="${CAPTURE_SUBNET:-192.168.1.0/24}" # whole LAN; narrow to one IP to scope it
 WINDOW="${1:-300}"                         # seconds per analysis window
@@ -77,7 +75,7 @@ while true; do
         # Zeek conn.log -> Vigilo anomaly report
         if docker run --rm --user "$U:$G" \
                 -v "$VIGILO/checkpoints:/app/checkpoints" -v "$SPOOL:/work" \
-                vigilo:latest report --log "/work/$base.conn" --out "/work/reports/$base.html" \
+                "$VIGILO_IMAGE" report --log "/work/$base.conn" --out "/work/reports/$base.html" \
                 >/dev/null 2>&1; then
             echo "    $base -> reports/$base.html"
         else

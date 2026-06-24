@@ -20,6 +20,23 @@ services:
       retries: 3
       start_period: 10s
 
+  # Passive SPAN / gateway capture — Zeek writes conn.log, Vigilo analyzes it.
+  # Usage: cp .env.span.example .env && docker compose --profile span up -d
+  # See docs/DEPLOY-SPAN-GATEWAY.md
+  zeek:
+    image: zeek/zeek:latest
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./data/zeek:/logs
+    working_dir: /logs
+    command: ["-i", "${CAPTURE_IFACE:-eth1}"]
+    restart: unless-stopped
+    profiles:
+      - span
+
   # One-shot: train the model, then exit.
   # Usage: docker compose run --rm train --logs data/home/home.conn.log
   train:

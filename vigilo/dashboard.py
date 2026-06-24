@@ -67,8 +67,8 @@ TEMPLATE = """
 
 @app.route("/")
 def index():
-    log = os.environ.get("VIGILO_LOG", "data/iot23/malware-49-1.labeled")
-    ckpt = os.environ.get("VIGILO_CKPT", "checkpoints/vigilo/vigilo.pt")
+    log = os.environ.get("VIGILO_LOG", "data/demo/sample.conn.log")
+    ckpt = os.environ.get("VIGILO_CKPT", "checkpoints/demo/vigilo.pt")
     results = analyze(log, ckpt)
     n_alert = sum(r["verdict"] == "ALERT" for r in results)
     return render_template_string(TEMPLATE, results=results, n=len(results),
@@ -91,8 +91,8 @@ def healthz():
 @app.route("/api/results")
 def api_results():
     """JSON API returning the same data the dashboard renders."""
-    log = os.environ.get("VIGILO_LOG", "data/iot23/malware-49-1.labeled")
-    ckpt = os.environ.get("VIGILO_CKPT", "checkpoints/vigilo/vigilo.pt")
+    log = os.environ.get("VIGILO_LOG", "data/demo/sample.conn.log")
+    ckpt = os.environ.get("VIGILO_CKPT", "checkpoints/demo/vigilo.pt")
     results = analyze(log, ckpt)
     n_alert = sum(r["verdict"] == "ALERT" for r in results)
     return jsonify({"devices": len(results), "alerts": n_alert, "results": results})

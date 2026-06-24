@@ -1,0 +1,10 @@
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	resp_pkts	orig_ip_bytes	resp_ip_bytes	tunnel_parents
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
+1700000000.000000	Cb00001	192.168.1.99	60000	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-
+1700000060.000000	Cb00002	192.168.1.99	60001	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-
+1700000120.000000	Cb00003	192.168.1.99	60002	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-
+1700000180.000000	Cb00004	192.168.1.99	60003	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-
+1700000240.000000	Cb00005	192.168.1.99	60004	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-
+1700000300.000000	Cb00006	192.168.1.99	60005	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-
+1700000360.000000	Cb00007	192.168.1.99	60006	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-
+1700000420.000000	Cb00008	192.168.1.99	60007	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-

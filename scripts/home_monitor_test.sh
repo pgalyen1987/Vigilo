@@ -10,9 +10,8 @@
 
 set -eu   # POSIX-portable (no pipefail bashism, no arrays — runs under sh or bash)
 
-# Config comes from .env (copy .env.example -> .env and fill in YOUR network).
-VIGILO="/home/me/SAAS/Vigilo"
-[ -f "$VIGILO/.env" ] && { set -a; . "$VIGILO/.env"; set +a; }
+# shellcheck source=common.sh
+. "$(dirname "$0")/common.sh"
 SSID="${WIFI_SSID:?set WIFI_SSID in .env (copy .env.example -> .env)}"
 WIFI_PASS="${WIFI_PASS:?set WIFI_PASS in .env}"
 CHANNEL="${WIFI_CHANNEL:-1}"   # your WiFi channel (router admin; 2.4GHz often 1/6/11)

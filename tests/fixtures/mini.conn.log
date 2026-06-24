@@ -1,0 +1,6 @@
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	resp_pkts	orig_ip_bytes	resp_ip_bytes	tunnel_parents
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
+1700000000.000000	Cabc123	192.168.1.10	54321	8.8.8.8	53	udp	dns	0.050	64	128	SF	T	F	0	^	4	4	120	180	-
+1700000060.000000	Cdef456	192.168.1.10	54322	142.250.80.46	443	tcp	ssl	1.200	500	1200	SF	T	F	0	^	8	10	600	1300	-
+1700000120.000000	Cghi789	192.168.1.20	49152	1.1.1.1	53	udp	dns	0.040	48	96	SF	T	F	0	^	3	3	100	150	-
+1700000180.000000	Cjkl012	192.168.1.99	60000	203.0.113.50	443	tcp	ssl	0.100	120	80	SF	T	F	0	^	4	3	180	140	-
